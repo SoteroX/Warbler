@@ -7,6 +7,7 @@ const errorHandler = require('./handlers/error');
 const authRoutes = require('./routes/auth');
 const msgRoutes = require('./routes/messages');
 const { loginRequired, ensureCorrectUser } = require('./middleware/auth');
+const db = require('./models');
 const PORT = 8081;
 
 app.use(cors());
@@ -21,16 +22,20 @@ app.use(
     msgRoutes
 );
 
-app.use('/api/messages', loginRequired, async function(req, res, next){
+app.get('/api/messages', loginRequired,  async function(req, res, next){
+    console.log("GETTING MESSAGES");
     try {
+        console.log('inside try');
         let messages = await db.Message.find()
             .sort({ createdAt: 'desc'})
             .populate('user', {
                 username: true,
                 profileImageUrl: true
             });
+        console.log('message is: ', messages);
         return res.status(200).json(messages);
     } catch (err) {
+        console.log('BAD DATA');
         return next(err);
     }
 });
